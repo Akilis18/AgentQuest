@@ -151,4 +151,5 @@ def test_action_result_turn_consumption(status, consumed):
         "request_id": "request-1",
         "status": status,
         "turn": int(consumed),
+        "message": None,
     }

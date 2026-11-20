@@ -2,7 +2,7 @@
 
 A turn-based pixel-art dungeon adventure in which an AI Agent will eventually select in-game actions. **Current phase: Milestone 1 (manual, deterministic prototype).**
 
-> Stages 1 and 2 provide the project skeleton, engine data models, and validated Forgotten Vault level. Action rules, the API, and the frontend are planned for later stages.
+> Stage 3 adds the deterministic game engine and a temporary terminal runner. The API and frontend are planned for later stages.
 
 ## Development setup (Windows PowerShell)
 
@@ -56,17 +56,26 @@ py -3.11 -m venv .venv
 
 If the Python launcher does not have 3.11, use your installed Python's matching version. `requirements.txt` is a manually maintained compatibility file, not a lockfile.
 
-## Running the project (once code has been implemented)
+## Running the game and tests
 
 ```powershell
-# Start FastAPI after backend/main.py defines `app`
-uv run uvicorn backend.main:app --reload
-
-# Run the model and world tests
+uv run python -m backend.cli
 uv run pytest -v
 ```
 
-The backend would normally be available at `http://127.0.0.1:8000`, with API documentation at `/docs`. The frontend will be served by FastAPI in a later stage.
+Type `n`, `e`, `s`, or `w` to move one tile. Enter other actions as JSON,
+one per line. The runner prints an action result and the public observation
+after each request. Use `restart` to reset the session or `quit` to exit.
+
+```json
+{"type":"interact","target":"entrance_plaque"}
+{"type":"inspect","target":[4,6]}
+{"type":"pickup","item_id":"decoy"}
+{"type":"use_item","item_id":"decoy","target":"vault_guard"}
+```
+
+If uv cannot access its cache and the existing `.venv` already has the
+dependencies, use `uv --no-cache run --no-sync` followed by either command.
 
 ## Target project structure
 
@@ -141,14 +150,16 @@ Tunnel, `V` Vault, `X` Exit, `#` wall.
 Storage holds the Bronze Key, Toolkit, and Decoy. The Guard Post requires
 the Decoy. The Service Tunnel requires the Bronze Key, and the Toolkit
 allows a damage-free crossing of its pressure plate. Both routes reach
-the treasure and allow a return to Exit. The Entrance plaque is an optional
-target for the future `interact` action.
+the treasure and allow a return to Exit. Use `interact` on the optional
+Entrance plaque to read its clue.
 
 ## Design commitments
 
-- World definitions are immutable. Each session initializes its own mutable state, with public observations to be projected separately.
+- World definitions are immutable. Each in-memory `GameSession` owns its state, exploration memory, and action history.
 - Coordinates use `[x, y]` in JSON, with the origin at the top left and tile lookup as `tiles[y][x]`.
 - Each request carries a request ID, expected turn, and one typed action. Applied and blocked results consume a turn. Rejected results preserve the current turn.
+- The history records accepted attempts, including blocked actions, with their arguments and results. Restart clears the history and exploration memory.
+- Public observations show the current tile and its cardinal neighbors, plus last-seen tiles and objects. Inspection requires current visibility.
 
 - One action per turn; failed but well-formed attempts also consume a turn.
 - Four-direction movement; no pathfinding from a single map click.
