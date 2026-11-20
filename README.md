@@ -2,7 +2,7 @@
 
 A turn-based pixel-art dungeon adventure in which an AI Agent will eventually select in-game actions. **Current phase: Milestone 1 (manual, deterministic prototype).**
 
-> Stage 1 provides the project skeleton, engine data models, and model tests. The playable level, action rules, API, and frontend are planned for later stages.
+> Stages 1 and 2 provide the project skeleton, engine data models, and validated Forgotten Vault level. Action rules, the API, and the frontend are planned for later stages.
 
 ## Development setup (Windows PowerShell)
 
@@ -62,8 +62,8 @@ If the Python launcher does not have 3.11, use your installed Python's matching 
 # Start FastAPI after backend/main.py defines `app`
 uv run uvicorn backend.main:app --reload
 
-# Run the Stage 1 model tests
-uv run pytest
+# Run the model and world tests
+uv run pytest -v
 ```
 
 The backend would normally be available at `http://127.0.0.1:8000`, with API documentation at `/docs`. The frontend will be served by FastAPI in a later stage.
@@ -112,6 +112,37 @@ agentquest/
 4. Add FastAPI sessions and a one-action-per-request endpoint.
 5. Build Canvas map rendering, action selector and click-to-act controls.
 6. Add browser-level manual playthrough tests and stabilize.
+
+## Forgotten Vault
+
+`backend.engine.world.load_world()` loads the 17×13 level and validates area
+connections, entity placement, and both routes. The diagram labels each floor
+tile by area.
+
+```text
+#################
+#################
+#################
+#######GGGGGGG###
+#######G#####G###
+#######G#####VVV#
+#XEEEJJJ#####VVV#
+#####S#T#####VVV#
+###SSS#T#####T###
+###SSS#TTTTTTT###
+#################
+#################
+#################
+```
+
+`E` Entrance, `J` Junction, `S` Storage, `G` Guard Post, `T` Service
+Tunnel, `V` Vault, `X` Exit, `#` wall.
+
+Storage holds the Bronze Key, Toolkit, and Decoy. The Guard Post requires
+the Decoy. The Service Tunnel requires the Bronze Key, and the Toolkit
+allows a damage-free crossing of its pressure plate. Both routes reach
+the treasure and allow a return to Exit. The Entrance plaque is an optional
+target for the future `interact` action.
 
 ## Design commitments
 
