@@ -2,7 +2,7 @@
 
 A turn-based pixel-art dungeon adventure in which an AI Agent will eventually select in-game actions. **Current phase: Milestone 1 (manual, deterministic prototype).**
 
-> This starter pack contains project instructions and environment configuration only. The backend application, map, frontend, and tests are **not yet implemented**, so launching the server or running game tests requires implementing the first stages.
+> Stage 1 provides the project skeleton, engine data models, and model tests. The playable level, action rules, API, and frontend are planned for later stages.
 
 ## Development setup (Windows PowerShell)
 
@@ -62,8 +62,8 @@ If the Python launcher does not have 3.11, use your installed Python's matching 
 # Start FastAPI after backend/main.py defines `app`
 uv run uvicorn backend.main:app --reload
 
-# Run automated tests after test files are created
-uv run pytest -v
+# Run the Stage 1 model tests
+uv run pytest
 ```
 
 The backend would normally be available at `http://127.0.0.1:8000`, with API documentation at `/docs`. The frontend will be served by FastAPI in a later stage.
@@ -114,6 +114,10 @@ agentquest/
 6. Add browser-level manual playthrough tests and stabilize.
 
 ## Design commitments
+
+- World definitions are immutable. Each session initializes its own mutable state, with public observations to be projected separately.
+- Coordinates use `[x, y]` in JSON, with the origin at the top left and tile lookup as `tiles[y][x]`.
+- Each request carries a request ID, expected turn, and one typed action. Applied and blocked results consume a turn. Rejected results preserve the current turn.
 
 - One action per turn; failed but well-formed attempts also consume a turn.
 - Four-direction movement; no pathfinding from a single map click.
