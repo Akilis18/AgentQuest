@@ -1,6 +1,5 @@
 """Load and validate the Forgotten Vault reference level."""
 
-from collections.abc import Iterator
 from enum import StrEnum
 from pathlib import Path
 from typing import Self
@@ -10,11 +9,12 @@ from pydantic import Field, model_validator
 from .models import (
     Coordinate,
     Definition,
-    EntityDefinition,
+    InteractableDefinition,
     ItemKind,
     Tile,
     WorldDefinition,
 )
+from .rules import neighbors
 
 
 FORGOTTEN_VAULT_PATH = Path(__file__).resolve().parents[1] / "data" / "forgotten_vault.json"
@@ -49,18 +49,6 @@ class AreaDefinition(Definition):
     tiles: tuple[Coordinate, ...] = Field(min_length=1)
 
 
-class InteractableDefinition(EntityDefinition):
-    description: str = Field(min_length=1)
-
-
-def _neighbors(position: Coordinate) -> Iterator[Coordinate]:
-    x, y = position
-    yield x + 1, y
-    yield x - 1, y
-    yield x, y + 1
-    yield x, y - 1
-
-
 def _reachable(start: Coordinate, walkable: set[Coordinate]) -> set[Coordinate]:
     reached = set()
     pending = [start] if start in walkable else []
@@ -69,7 +57,7 @@ def _reachable(start: Coordinate, walkable: set[Coordinate]) -> set[Coordinate]:
         if position in reached:
             continue
         reached.add(position)
-        pending.extend(tile for tile in _neighbors(position) if tile in walkable)
+        pending.extend(tile for tile in neighbors(position) if tile in walkable)
     return reached
 
 
@@ -90,7 +78,7 @@ def _resolve_route(
         opened = {
             obstacle
             for obstacle in blocked & tools.keys()
-            if tools[obstacle] in reached and reached.intersection(_neighbors(obstacle))
+            if tools[obstacle] in reached and reached.intersection(neighbors(obstacle))
         }
         if not opened:
             return walkable - blocked
@@ -144,7 +132,7 @@ class ForgottenVaultDefinition(WorldDefinition):
         connections = {
             frozenset((area, area_at[neighbor]))
             for tile, area in area_at.items()
-            for neighbor in _neighbors(tile)
+            for neighbor in neighbors(tile)
             if neighbor in area_at and area_at[neighbor] != area
         }
         if connections != AREA_CONNECTIONS:
@@ -172,13 +160,8 @@ class ForgottenVaultDefinition(WorldDefinition):
             if area_at[entity.position] != area:
                 raise ValueError(f"{entity.id} must be in {area}")
 
-        entities = (*self.items, *self.doors, *self.guards, *self.traps, *self.interactables)
-        if len({entity.id for entity in entities}) != len(entities):
-            raise ValueError("entity IDs must be unique, including interactables")
         if self.doors[0].position == self.traps[0].position:
             raise ValueError("the locked door and trap must occupy distinct tiles")
-        for entity in self.interactables:
-            self._validate_position(entity.position, entity.id)
 
     def _validate_routes(self, walkable: set[Coordinate], exit_tile: Coordinate) -> None:
         door, guard, trap = self.doors[0], self.guards[0], self.traps[0]

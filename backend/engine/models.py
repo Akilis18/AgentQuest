@@ -55,6 +55,10 @@ class TrapDefinition(EntityDefinition):
     toolkit_id: Identifier
 
 
+class InteractableDefinition(EntityDefinition):
+    description: str = Field(min_length=1)
+
+
 class WorldDefinition(Definition):
     id: Identifier
     width: PositiveInt
@@ -65,6 +69,7 @@ class WorldDefinition(Definition):
     doors: tuple[DoorDefinition, ...] = ()
     guards: tuple[GuardDefinition, ...] = ()
     traps: tuple[TrapDefinition, ...] = ()
+    interactables: tuple[InteractableDefinition, ...] = ()
 
     @model_validator(mode="after")
     def validate_layout(self) -> Self:
@@ -76,7 +81,7 @@ class WorldDefinition(Definition):
             raise ValueError("tile grid must contain exactly one exit")
 
         self._validate_position(self.start, "start")
-        entities = (*self.items, *self.doors, *self.guards, *self.traps)
+        entities = (*self.items, *self.doors, *self.guards, *self.traps, *self.interactables)
         ids = set()
         for entity in entities:
             if entity.id in ids:
@@ -107,6 +112,16 @@ class GameStatus(StrEnum):
     DEFEAT = "defeat"
 
 
+class KnownObject(Definition):
+    """A public snapshot of an object when its tile was last visible."""
+
+    id: Identifier
+    position: Coordinate
+    kind: Literal["item", "door", "guard", "trap", "interactable"]
+    item_kind: ItemKind | None = None
+    status: Literal["locked", "unlocked", "alert", "distracted", "armed", "disarmed"] | None = None
+
+
 class GameState(Model):
     """Authoritative session data. Public observations will be projected separately."""
 
@@ -121,6 +136,7 @@ class GameState(Model):
     distracted_guards: set[Identifier] = Field(default_factory=set)
     disarmed_traps: set[Identifier] = Field(default_factory=set)
     discovered_tiles: set[Coordinate] = Field(default_factory=set)
+    known_objects: dict[Identifier, KnownObject] = Field(default_factory=dict)
 
     @classmethod
     def from_world(cls, world: WorldDefinition) -> Self:
@@ -183,11 +199,17 @@ class ActionStatus(StrEnum):
 
 
 class ActionResult(Definition):
-    request_id: Identifier
+    request_id: Identifier | None
     status: ActionStatus
     turn: NonNegativeInt
+    message: str | None = None
 
     @property
     def turn_consumed(self) -> bool:
         """Accepted attempts consume a turn, including rule-blocked attempts."""
         return self.status in (ActionStatus.APPLIED, ActionStatus.BLOCKED)
+
+
+class ActionRecord(Definition):
+    request: ActionRequest
+    result: ActionResult
