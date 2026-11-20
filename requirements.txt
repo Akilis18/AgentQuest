@@ -1,0 +1,7 @@
+# pip-compatible fallback. pyproject.toml + uv.lock is the preferred source of truth.
+# Keep these direct dependencies in sync with pyproject.toml if using pip.
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+pydantic>=2.9,<3
+pytest>=8,<10
+httpx>=0.27,<1
