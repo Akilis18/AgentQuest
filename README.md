@@ -2,7 +2,7 @@
 
 A turn-based pixel-art dungeon adventure in which an AI Agent will eventually select in-game actions. **Current phase: Milestone 1 (manual, deterministic prototype).**
 
-> Stage 3 adds the deterministic game engine and a temporary terminal runner. The API and frontend are planned for later stages.
+> Stage 4 exposes the deterministic game engine through FastAPI. The terminal runner is also available. The web frontend comes in a later stage.
 
 ## Development setup (Windows PowerShell)
 
@@ -75,7 +75,52 @@ after each request. Use `restart` to reset the session or `quit` to exit.
 ```
 
 If uv cannot access its cache and the existing `.venv` already has the
-dependencies, use `uv --no-cache run --no-sync` followed by either command.
+dependencies, use `uv --no-cache run --no-sync` in place of `uv run`.
+
+## Running the API
+
+Start the server from the project root.
+
+```powershell
+uv run uvicorn backend.main:app --reload
+```
+
+Open [Swagger UI](http://127.0.0.1:8000/docs), or run these examples from
+another PowerShell window.
+
+```powershell
+$base = "http://127.0.0.1:8000/api"
+Invoke-RestMethod "$base/health"
+$game = Invoke-RestMethod -Method Post -Uri "$base/games"
+$gameUrl = "$base/games/$($game.session_id)"
+$current = Invoke-RestMethod $gameUrl
+
+$payload = @{
+    request_id = [guid]::NewGuid().ToString()
+    expected_turn = $current.observation.turn
+    action = @{ type = "move"; direction = "east" }
+} | ConvertTo-Json -Depth 4
+
+Invoke-RestMethod -Method Post -Uri "$gameUrl/actions" -ContentType "application/json" -Body $payload
+Invoke-RestMethod $gameUrl
+Invoke-RestMethod -Method Post -Uri "$gameUrl/restart"
+```
+
+Creation returns HTTP 201. Creation, retrieval, and restart return the session
+ID and public observation. Actions return the action result. An applied or
+blocked action returns HTTP 200 and consumes one turn. Unknown sessions return
+404, malformed action requests return 422, and rejected actions return 409.
+
+For a retry, resend the same request ID, expected turn, and action to receive
+the original result. Reusing an ID with changed arguments returns 409.
+Restart resets gameplay, exploration memory, and action history. Retry receipts
+remain valid for the life of that session, so use fresh IDs for new actions
+after a restart. Fetch the current observation before retrying a stale action
+as a new request.
+
+Sessions and receipts live in one server process and are lost when it exits
+or reloads. Run the MVP with one worker. The API has no authentication or
+session expiry.
 
 ## Target project structure
 
