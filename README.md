@@ -2,7 +2,7 @@
 
 A turn-based pixel-art dungeon adventure in which an AI Agent will eventually select in-game actions. **Current phase: Milestone 1 (manual, deterministic prototype).**
 
-> Stage 4 exposes the deterministic game engine through FastAPI. The terminal runner is also available. The web frontend comes in a later stage.
+> Stage 5 adds the browser game. The FastAPI endpoints and terminal runner are also available.
 
 ## Development setup (Windows PowerShell)
 
@@ -57,6 +57,22 @@ py -3.11 -m venv .venv
 If the Python launcher does not have 3.11, use your installed Python's matching version. `requirements.txt` is a manually maintained compatibility file, not a lockfile.
 
 ## Running the game and tests
+
+Start the server from the project root and open [the game](http://127.0.0.1:8000/).
+
+```powershell
+uv run uvicorn backend.main:app --reload
+```
+
+Use the arrow buttons, arrow keys, or WASD to move. In Move mode, you can
+also click an adjacent tile. For other actions, choose the action, select an
+item or target where needed, and press **Execute action**. Clicking a visible
+target on the map can select it. Find the treasure and bring it to the exit.
+**Restart** resets the current session. **New game** creates a separate session.
+If a connection drops, **Reconnect** checks the last action with its original
+request ID before refreshing the current session.
+
+The terminal runner and the test suite can be started separately.
 
 ```powershell
 uv run python -m backend.cli

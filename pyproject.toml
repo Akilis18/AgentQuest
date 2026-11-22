@@ -17,5 +17,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
+# The optional cache can be inaccessible on managed Windows workspaces.
+addopts = "-p no:cacheprovider"
 testpaths = ["tests"]
 pythonpath = ["."]
