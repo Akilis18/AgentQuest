@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentQuest · Forgotten Vault</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script type="module" src="/js/game.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="top-inner">
+      <a class="brand" href="/" aria-label="AgentQuest home"><span class="brand-mark" aria-hidden="true"></span>Agent<span>Quest</span></a>
+      <div class="game-buttons">
+        <button id="restart" type="button" disabled>Restart</button>
+        <button id="new-game" class="primary" type="button" disabled>New game</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="intro">
+      <h1>Forgotten Vault</h1>
+      <p>Find the treasure and bring it back to the exit.</p>
+    </div>
+    <div class="layout">
+      <section class="panel map-panel" aria-labelledby="map-title">
+        <div class="map-header">
+          <h2 id="map-title">Dungeon map</h2>
+          <span class="coordinates" id="position">—</span>
+        </div>
+        <div class="map-frame">
+          <canvas id="map" width="272" height="208" aria-label="Dungeon map. Use the movement buttons or action controls as an alternative to map clicks.">
+            Your browser needs Canvas to draw the dungeon.
+          </canvas>
+          <div class="ending" id="ending" hidden>
+            <strong id="ending-title"></strong>
+            <span id="ending-message"></span>
+          </div>
+        </div>
+        <ul class="legend" aria-label="Map legend">
+          <li><i class="swatch player"></i>Player</li>
+          <li><i class="swatch visible"></i>Visible</li>
+          <li><i class="swatch explored"></i>Explored</li>
+          <li><i class="swatch unknown"></i>Unexplored</li>
+        </ul>
+      </section>
+      <aside class="sidebar" aria-label="Player and controls">
+        <section class="panel status-panel" aria-labelledby="status-title">
+          <div class="panel-heading"><h2 id="status-title">Adventurer</h2><span id="game-status" class="badge">Connecting</span></div>
+          <div class="stats">
+            <div><span class="label">Health</span><span id="health" class="hearts" aria-hidden="true"></span><span id="health-value" class="sr-only"></span></div>
+            <div><span class="label">Turn</span><strong id="turn">—</strong></div>
+          </div>
+          <h3>Inventory</h3>
+          <ul id="inventory" class="inventory"><li>Empty</li></ul>
+        </section>
+        <section class="panel controls" aria-labelledby="controls-title">
+          <h2 id="controls-title">Controls</h2>
+          <fieldset id="movement" disabled>
+            <legend class="sr-only">Movement</legend>
+            <div class="dpad">
+              <button type="button" data-direction="north" aria-label="Move north">↑</button>
+              <button type="button" data-direction="west" aria-label="Move west">←</button>
+              <button type="button" data-direction="south" aria-label="Move south">↓</button>
+              <button type="button" data-direction="east" aria-label="Move east">→</button>
+            </div>
+          </fieldset>
+          <p class="hint">Arrow keys or WASD to move. In Move mode, click an adjacent tile.</p>
+          <form id="action-form">
+            <fieldset id="action-fields" disabled>
+              <label for="action-type">Action</label>
+              <select id="action-type">
+                <option value="move">Move</option>
+                <option value="inspect">Inspect</option>
+                <option value="pickup">Pick up</option>
+                <option value="use_item">Use item</option>
+                <option value="interact">Interact</option>
+              </select>
+              <div id="item-field" hidden><label for="item">Item</label><select id="item"></select></div>
+              <div id="target-field" hidden><label for="target">Target</label><select id="target"></select></div>
+              <button class="primary" id="execute" type="submit" hidden>Execute action</button>
+            </fieldset>
+          </form>
+        </section>
+        <section class="panel log-panel" aria-labelledby="log-title">
+          <div class="panel-heading"><h2 id="log-title">Action log</h2><button id="recover" type="button" hidden>Reconnect</button></div>
+          <p id="feedback" role="status">Connecting to the dungeon…</p>
+          <ol id="history" aria-label="Recent actions"></ol>
+        </section>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

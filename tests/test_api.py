@@ -43,6 +43,16 @@ def test_health_and_documentation(client):
     }
 
 
+def test_serves_frontend_and_keeps_world_data_private(client):
+    page = client.get("/")
+    assert page.status_code == 200
+    assert '<canvas id="map"' in page.text
+    assert 'src="/js/game.js"' in page.text
+    for asset in ("css/style.css", "js/api.js", "js/game.js", "js/controls.js",
+                  "js/renderer.js", "assets/sprites/dungeon.js"):
+        assert client.get(f"/{asset}").status_code == 200
+    assert client.get("/backend/data/forgotten_vault.json").status_code == 404
+
 def test_create_and_retrieve_game(client):
     start = create_game(client)
     assert UUID(start["session_id"]).version == 4
