@@ -120,7 +120,12 @@ async function synchronize() {
     pending = null;
     saveSession();
   }
-  observation = (await api.observe(sessionId)).observation;
+  const refreshed = (await api.observe(sessionId)).observation;
+  if (observation && refreshed.turn < observation.turn) {
+    history.length = 0;
+    showHistory();
+  }
+  observation = refreshed;
 }
 
 async function newGame() {

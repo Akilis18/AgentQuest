@@ -93,6 +93,23 @@ after each request. Use `restart` to reset the session or `quit` to exit.
 If uv cannot access its cache and the existing `.venv` already has the
 dependencies, use `uv --no-cache run --no-sync` in place of `uv run`.
 
+### Browser integration tests
+
+Start the game server and leave it running. In a second terminal, use Node.js
+22 or later and an installed Chromium browser:
+
+```powershell
+node --test tests/browser/game.test.mjs
+```
+
+The browser tests use Node's built-in test runner and Chromium DevTools.
+They create independent games through the UI and cover both routes, viewport
+layout, and request recovery. Set `AGENTQUEST_CHROME` to the browser executable
+if it is installed in a custom location, or `AGENTQUEST_URL` if the game is
+running on a different port. In a restricted test environment where Chromium
+cannot start with its sandbox, set `AGENTQUEST_CHROME_NO_SANDBOX=1` only for
+the trusted local test server.
+
 ## Running the API
 
 Start the server from the project root.

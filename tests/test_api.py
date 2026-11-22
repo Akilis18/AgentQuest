@@ -112,6 +112,19 @@ async def test_malformed_requests_are_rejected(client, game_url, payload):
     assert (await client.get(game_url)).json() == start
 
 
+async def test_invalid_json_does_not_reserve_a_request_id_or_consume_a_turn(client, game_url):
+    malformed = await client.post(
+        game_url + "/actions",
+        content='{"request_id":"retry",',
+        headers={"Content-Type": "application/json"},
+    )
+    assert malformed.status_code == 422
+    assert (await client.get(game_url)).json()["observation"]["turn"] == 0
+    valid = await client.post(game_url + "/actions", json=move("retry"))
+    assert valid.status_code == 200
+    assert valid.json()["turn"] == 1
+
+
 async def test_stale_turn_conflict_is_idempotent(client, game_url):
     stale = move("stale", 1)
     rejected = await client.post(game_url + "/actions", json=stale)
