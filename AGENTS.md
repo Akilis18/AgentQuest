@@ -9,7 +9,7 @@ AgentQuest is a turn-based, pixel-art dungeon game. The player will eventually c
 - Backend: Python 3.11+, FastAPI and Pydantic; deterministic engine code under `backend/engine/`.
 - Frontend: vanilla HTML/CSS/JavaScript with a Canvas 2D pixel-art map, under `frontend/`.
 - Level definitions: JSON in `backend/data/`. Runtime game state lives on the server.
-- Tests: pytest and FastAPI TestClient. Use `uv` for dependency management.
+- Tests: pytest and HTTPX ASGI transport for FastAPI integration tests. Use `uv` for dependency management.
 - Keep engine logic independent of FastAPI and UI. API endpoints translate requests and serialize results; frontend only renders observations and submits actions.
 
 ## Gameplay invariants (must not change silently)
