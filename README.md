@@ -2,7 +2,7 @@
 
 A turn-based pixel-art dungeon adventure in which an AI Agent will eventually select in-game actions. **Current phase: Milestone 1 (manual, deterministic prototype).**
 
-> Stage 5 adds the browser game. The FastAPI endpoints and terminal runner are also available.
+> Milestone 1 is complete. See the [v0.1.0 release notes](docs/releases/v0.1.0.md) and the [reproducible Forgotten Vault demo](docs/milestone-1-demo.md).
 
 ## Development setup (Windows PowerShell)
 
